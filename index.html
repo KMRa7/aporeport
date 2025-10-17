@@ -172,7 +172,8 @@
           <div class="row two">
             <div>
               <label for="industry">業種</label>
-              <input id="industry" type="text" placeholder="例）助産院 / ネイル / など" />
+              <input id="industry" type="text" list="industryList" placeholder="例）助産院 / ネイル / など" />
+              <datalist id="industryList"></datalist>
             </div>
             <div>
               <label for="url">媒体URL</label>
@@ -268,10 +269,7 @@
                 <label class="chip"><input type="radio" name="easyOrHard" value="粘り" />粘り</label>
               </div>
             </div>
-            <div>
-              <label for="mediaAll">掲載媒体(あるだけ全部)</label>
-              <input id="mediaAll" type="text" placeholder="例）自社HP / ぐるなび / Google など" />
-            </div>
+            <div></div>
           </div>
 
           <div>
@@ -347,7 +345,6 @@
       lines.push(`■詰め直し日時${FW_COLON}${dt('followDate','followTime')}`);
       lines.push(`■アポをくれた理由${FW_COLON}${el('reason').value}`);
       lines.push(`■すんなりアポor粘りアポ${FW_COLON}${getChoice('easyOrHard')}`);
-      lines.push(`■掲載媒体(あるだけ全部)${FW_COLON}${el('mediaAll').value}`);
       lines.push(`■ライン@の運用頻度${FW_COLON}${el('lineFreq').value}`);
       lines.push(`■補足(クローザーに伝えたいこと)${FW_COLON}${el('memo').value}`);
       return lines.join('\n');
@@ -392,11 +389,48 @@
       el('followTime').value = '12:10';
       el('reason').value='運用方法';
       selectChip('easyOrHard','すんなり');
-      el('mediaAll').value='自社HP';
       el('lineFreq').value='まだ開設して公にしてない';
       el('memo').value='公式LINE作ったがまだ使用しておらず最近作ったばかり。今は出張専門で、今後新店舗予定で事業拡大予定。\nかなり費用に関して聞いてきたので費用ネックはきそう。';
       render();
     }
+    // ===== 電話番号オートハイフン =====
+    (function(){
+      var telInput = document.getElementById('tel');
+      if(!telInput) return;
+      telInput.addEventListener('input', function(){
+        var v = telInput.value.replace(/[^0-9]/g,'').slice(0,11);
+        if(v.length >= 11){
+          v = v.replace(/^(\d{3})(\d{4})(\d{4}).*$/, function(_,a,b,c){ return a + '-' + b + '-' + c; });
+        } else if(v.length >= 10){
+          v = v.replace(/^(\d{2,3})(\d{3,4})(\d{4}).*$/, function(_,a,b,c){ return a + '-' + b + '-' + c; });
+        }
+        telInput.value = v;
+        render();
+      });
+    })();
+
+    // ===== 業種サジェスト（最近入力から） =====
+    var RECENT_KEY = 'recent_industry';
+    function pushRecentIndustry(val){
+      var v = (val||'').trim();
+      if(!v) return;
+      var arr = [];
+      try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) {}
+      if(arr.indexOf(v) === -1){ arr.unshift(v); }
+      localStorage.setItem(RECENT_KEY, JSON.stringify(arr.slice(0,10)));
+      renderIndustryList();
+    }
+    function renderIndustryList(){
+      var list = document.getElementById('industryList');
+      if(!list) return;
+      var arr = [];
+      try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) {}
+      list.innerHTML = arr.map(function(x){ return '<option value="' + x.replace(/\"/g,'&quot;') + '\">'; }).join('');
+    }
+    (function(){
+      var ind = document.getElementById('industry');
+      if(ind){ ind.addEventListener('change', function(e){ pushRecentIndustry(e.target.value); }); }
+    })();
 
     // chip UI active管理 & 入力変化で反映
     document.addEventListener('change', (e)=>{
@@ -416,7 +450,7 @@
       pic:el('pic').value,personality:el('personality').value,
       sex:getChoice('sex'),hasDecision:getChoice('hasDecision'),hasLine:getChoice('hasLine'),hasMeo:getChoice('hasMeo'),
       meetingDate:el('meetingDate').value,meetingTime:el('meetingTime').value,followDate:el('followDate').value,followTime:el('followTime').value,
-      reason:el('reason').value,easyOrHard:getChoice('easyOrHard'),mediaAll:el('mediaAll').value,lineFreq:el('lineFreq').value,memo:el('memo').value,
+      reason:el('reason').value,easyOrHard:getChoice('easyOrHard'),lineFreq:el('lineFreq').value,memo:el('memo').value,
       autosave:el('autosave').checked };
       localStorage.setItem(LS_KEY, JSON.stringify(data)); }
 
@@ -432,8 +466,7 @@
         if(d.hasMeo) selectChip('hasMeo',d.hasMeo);
         el('meetingDate').value=d.meetingDate||''; el('meetingTime').value=d.meetingTime||'';
         el('followDate').value=d.followDate||''; el('followTime').value=d.followTime||'';
-        el('reason').value=d.reason||''; if(d.easyOrHard) selectChip('easyOrHard',d.easyOrHard);
-        el('mediaAll').value=d.mediaAll||''; el('lineFreq').value=d.lineFreq||''; el('memo').value=d.memo||'';
+        el('reason').value=d.reason||''; if(d.easyOrHard) selectChip('easyOrHard',d.easyOrHard); el('lineFreq').value=d.lineFreq||''; el('memo').value=d.memo||'';
         el('autosave').checked=d.autosave ?? true;
       }catch{}
     }
@@ -462,9 +495,7 @@
     }
     window.addEventListener('resize', ()=>setTab(currentTab));
 
-    window.addEventListener('DOMContentLoaded',()=>{
-      loadLocal(); render(); setTab('input');
-    });
+    window.addEventListener('DOMContentLoaded',()=>{ renderIndustryList(); loadLocal(); render(); setTab('input'); });
   </script>
 </body>
 </html>
