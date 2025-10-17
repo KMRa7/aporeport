@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>【ダービー部隊】入力→コピー ツール（v3-mobile）</title>
+  <style>
+    /* ===== Base / Tokens ===== */
+    :root{
+      --bg:#0f172a; --panel:#111827; --ink:#e5e7eb; --muted:#94a3b8; --brand:#22d3ee;
+      --border:#1f2937; --ok:#34d399; --warn:#fbbf24; --danger:#ef4444;
+      --header-h:56px; --tabs-h:44px; --radius:16px;
+    }
+    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
+      color:var(--ink); background:radial-gradient(1200px 600px at 20% -10%,#0b1026 0%,#0f172a 45%,#0b1026 100%);
+      -webkit-text-size-adjust:100%;
+    }
+    .spacer{flex:1}
+
+    /* ===== Header ===== */
+    header{
+      position:sticky; top:0; z-index:20; backdrop-filter: blur(6px);
+      background:color-mix(in lab,var(--bg) 82%,#000 18% / 65%);
+      border-bottom:1px solid var(--border); padding:12px 14px env(safe-area-inset-right) 12px;
+      display:flex; align-items:center; gap:10px; min-height:var(--header-h);
+      padding-left: calc(14px + env(safe-area-inset-left));
+    }
+    header h1{margin:0; font-size:clamp(14px, 3.5vw, 16px); letter-spacing:.04em}
+    header .badge{font-size:12px; color:var(--bg); background:linear-gradient(90deg,var(--brand),#a78bfa); padding:3px 10px; border-radius:999px}
+
+    /* ===== Layout ===== */
+    .wrap{max-width:1200px; margin:0 auto; padding:12px 12px calc(88px + env(safe-area-inset-bottom));}
+    .grid{display:grid; gap:16px; align-items:start; grid-template-columns:1fr}
+    @media (min-width:1024px){ .grid{ grid-template-columns:7fr 5fr; } }
+
+    /* ===== Mobile Top Tabs (show on <=1023px) ===== */
+    .mobile-tabs{display:none}
+    @media (max-width:1023px){
+      .mobile-tabs{ position:sticky; top:var(--header-h); z-index:19; display:flex; gap:0; border-bottom:1px solid var(--border);
+        background:color-mix(in lab,var(--bg) 88%, #000 12% / 85%); backdrop-filter: blur(6px);
+      }
+      .tab-btn{flex:1; appearance:none; border:0; background:transparent; color:var(--muted); font-weight:700; letter-spacing:.02em; padding:12px 8px}
+      .tab-btn.active{ color:#e2e8f0; border-bottom:2px solid var(--brand); }
+    }
+
+    /* Tab-controlled visibility on mobile */
+    [data-tab]{
+      /* desktop default: always visible */
+    }
+    @media (max-width:1023px){
+      [data-tab]{ display:none; }
+      [data-tab].show{ display:block; }
+    }
+
+    /* ===== Cards ===== */
+    .card{ background:color-mix(in srgb,var(--panel) 86%,#0a0f23 14%); border:1px solid var(--border); border-radius:var(--radius); overflow:clip }
+    .card h2{ font-size:15px; margin:0; padding:14px 16px; border-bottom:1px solid var(--border); color:#dbeafe; background:linear-gradient(180deg,rgba(39,39,42,.3),rgba(17,24,39,.8)) }
+
+    /* ===== Form ===== */
+    form{ display:grid; gap:14px; padding:16px }
+    .row{ display:grid; gap:10px }
+    .row.two{ grid-template-columns:1fr 1fr }
+    .row.three{ grid-template-columns:repeat(3,1fr) }
+    @media (max-width:640px){ .row.two,.row.three{ grid-template-columns:1fr } }
+
+    label{ font-size:12px; color:var(--muted); letter-spacing:.03em; display:block }
+    input[type=text],input[type=url],input[type=tel],input[type=date],input[type=time],textarea{
+      width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background:#0b1228; color:var(--ink);
+      outline:none; transition:border-color .2s, box-shadow .2s; font-size:16px; /* prevent iOS zoom */ min-height:44px
+    }
+    textarea{ min-height:92px; resize:vertical }
+    input:focus,textarea:focus{ border-color:color-mix(in srgb,var(--brand),white 10%); box-shadow:0 0 0 3px color-mix(in srgb,var(--brand),transparent 82%) }
+
+    /* ===== Choice Chips ===== */
+    .choices{ display:flex; flex-wrap:wrap; gap:8px }
+    .chip{ border:1px solid var(--border); background:#0a1024; color:var(--ink); padding:10px 14px; border-radius:999px; font-size:14px;
+      cursor:pointer; user-select:none; min-height:40px; display:inline-flex; align-items:center; gap:8px; touch-action:manipulation }
+    .chip input{ display:none }
+    .chip.active{ border-color:var(--brand); outline:2px solid color-mix(in srgb,var(--brand),transparent 80%); background:color-mix(in srgb,var(--brand),#0a1024 85%) }
+
+    /* ===== Buttons / Toolbars ===== */
+    .toolbar{ display:flex; gap:8px; padding:10px; border-top:1px solid var(--border); background:rgba(0,0,0,.25) }
+    button{ --padx:16px; --pady:12px; padding:var(--pady) var(--padx); border-radius:12px; border:1px solid var(--border); background:#10172b; color:var(--ink);
+      cursor:pointer; font-weight:700; letter-spacing:.02em; min-height:44px; touch-action: manipulation }
+    button.ok{ border-color:color-mix(in srgb,var(--ok),#000 40%); background:linear-gradient(180deg,color-mix(in srgb,var(--ok),#000 85%),#0c1329) }
+    button.warn{ border-color:color-mix(in srgb,var(--warn),#000 40%); background:linear-gradient(180deg,color-mix(in srgb,var(--warn),#000 85%),#0c1329) }
+
+    .desktop-only{ display:inline-flex }
+    .mobile-only{ display:none }
+    @media (max-width:1023px){ .desktop-only{ display:none !important } .mobile-only{ display:inline-flex } }
+
+    /* ===== Preview ===== */
+    .preview{ padding:0; display:grid; grid-template-rows:auto 1fr auto; min-height:min(70dvh, 640px) }
+    .preview .head{ padding:10px 12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); background:rgba(0,0,0,.2) }
+    .preview .head b{ font-size:13px; color:#c7d2fe }
+    pre{ margin:0; padding:16px; background:#0b1228; color:#e5e7eb; border-bottom:1px solid var(--border); white-space:pre-wrap; word-break:break-word;
+      font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Noto Sans Mono CJK JP",monospace; font-size:14px; line-height:1.6; max-height:50vh; overflow:auto }
+    .foot{ display:flex; gap:8px; align-items:center; padding:10px; border-top:1px solid var(--border); background:rgba(0,0,0,.25) }
+    @media (max-width:1023px){
+      .preview .foot{ position:sticky; bottom:0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); background:linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.48)) }
+    }
+    .note{ font-size:12px; color:var(--muted) }
+
+    /* ===== Switch ===== */
+    .switch{ display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--muted) }
+    .switch input{ appearance:none; width:38px; height:22px; background:#0b1228; border:1px solid var(--border); border-radius:999px; position:relative; outline:none; cursor:pointer; transition:.2s }
+    .switch input::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; background:#cbd5e1; border-radius:50%; transition:.2s }
+    .switch input:checked{ background:color-mix(in srgb,var(--brand),#0b1228 75%); border-color:color-mix(in srgb,var(--brand),#000 25%) }
+    .switch input:checked::after{ left:18px; background:#fff }
+
+    /* ===== Toast ===== */
+    .toast{ position:fixed; right:16px; bottom:calc(16px + env(safe-area-inset-bottom)); padding:10px 12px; border-radius:10px; background:#052e2b; color:#d1fae5; border:1px solid #0d9488;
+      box-shadow:0 10px 30px rgba(0,0,0,.35); opacity:0; transform:translateY(6px); pointer-events:none; transition:.25s; z-index:30 }
+    .toast.show{ opacity:1; transform:translateY(0) }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="badge">テンプレ生成</span>
+    <h1>【ダービー部隊】入力→コピー ツール（v3）</h1>
+    <span class="spacer"></span>
+  </header>
+
+  <!-- Mobile tabs -->
+  <nav class="mobile-tabs" role="tablist" aria-label="ビュー切替">
+    <button id="tabInput" class="tab-btn active" role="tab" aria-controls="tabPanelInput" aria-selected="true" onclick="setTab('input')">入力</button>
+    <button id="tabPreview" class="tab-btn" role="tab" aria-controls="tabPanelPreview" aria-selected="false" onclick="setTab('preview')">プレビュー</button>
+  </nav>
+
+  <div class="wrap">
+    <div class="grid">
+      <!-- 左：入力フォーム -->
+      <section class="card" data-tab="input" id="tabPanelInput" aria-labelledby="tabInput">
+        <h2>① 情報入力</h2>
+        <form id="form">
+          <div class="row two">
+            <div>
+              <label for="apointer">アポインター名</label>
+              <input id="apointer" type="text" placeholder="例）木下" autocomplete="name" />
+            </div>
+            <div>
+              <label for="tel">電話番号</label>
+              <input id="tel" type="tel" inputmode="tel" placeholder="例）08012345678 / 080-1234-5678" autocomplete="tel" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label for="lineOrMeoText">LINE or MEO</label>
+              <input id="lineOrMeoText" type="text" placeholder="例）LINE / MEO" />
+            </div>
+            <div>
+              <label for="wakuOrDerbyText">わくわく or ダービー</label>
+              <input id="wakuOrDerbyText" type="text" placeholder="例）わくわく / ダービー" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label for="shop">店舗名</label>
+              <input id="shop" type="text" placeholder="例）店舗名" autocomplete="organization" />
+            </div>
+            <div>
+              <label for="addr">店舗住所</label>
+              <input id="addr" type="text" placeholder="例）都道府県 市区町村" autocomplete="street-address" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label for="industry">業種</label>
+              <input id="industry" type="text" placeholder="例）助産院 / ネイル / など" />
+            </div>
+            <div>
+              <label for="url">媒体URL</label>
+              <input id="url" type="url" placeholder="例）https://example.com/" inputmode="url" autocomplete="url" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label for="visitOrZoomText">訪問 or ZOOM</label>
+              <input id="visitOrZoomText" type="text" placeholder="例）ZOOM / 訪問" />
+            </div>
+            <div>
+              <label for="pic">担当者様</label>
+              <input id="pic" type="text" placeholder="例）担当者名 様" autocomplete="name" />
+            </div>
+          </div>
+
+          <div>
+            <label for="personality">担当者の人柄</label>
+            <textarea id="personality" placeholder="例）30-40代女性。テンションは低めだが冷静に話を聞いてくれる"></textarea>
+          </div>
+
+          <div class="row three">
+            <div>
+              <label>性別</label>
+              <div class="choices" data-name="sex">
+                <label class="chip"><input type="radio" name="sex" value="男性" />男性</label>
+                <label class="chip"><input type="radio" name="sex" value="女性" />女性</label>
+              </div>
+            </div>
+            <div>
+              <label>決済者の有無</label>
+              <div class="choices" data-name="hasDecision">
+                <label class="chip"><input type="radio" name="hasDecision" value="あり" />あり</label>
+                <label class="chip"><input type="radio" name="hasDecision" value="なし" />なし</label>
+              </div>
+            </div>
+            <div>
+              <label>LINE@の有無</label>
+              <div class="choices" data-name="hasLine">
+                <label class="chip"><input type="radio" name="hasLine" value="あり" />あり</label>
+                <label class="chip"><input type="radio" name="hasLine" value="なし" />なし</label>
+                <label class="chip"><input type="radio" name="hasLine" value="不明" />不明</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>MEO対策の有無</label>
+              <div class="choices" data-name="hasMeo">
+                <label class="chip"><input type="radio" name="hasMeo" value="あり" />あり</label>
+                <label class="chip"><input type="radio" name="hasMeo" value="なし" />なし</label>
+                <label class="chip"><input type="radio" name="hasMeo" value="不明" />不明</label>
+              </div>
+            </div>
+            <div></div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>商談日</label>
+              <input id="meetingDate" type="date" />
+            </div>
+            <div>
+              <label>商談時間</label>
+              <input id="meetingTime" type="time" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>詰め直し日時（日付/時間）</label>
+              <div class="row two">
+                <input id="followDate" type="date" />
+                <input id="followTime" type="time" />
+              </div>
+            </div>
+            <div></div>
+          </div>
+
+          <div>
+            <label for="reason">アポをくれた理由</label>
+            <textarea id="reason" placeholder="例）運用方法 など"></textarea>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>すんなりアポ or 粘りアポ</label>
+              <div class="choices" data-name="easyOrHard">
+                <label class="chip"><input type="radio" name="easyOrHard" value="すんなり" />すんなり</label>
+                <label class="chip"><input type="radio" name="easyOrHard" value="粘り" />粘り</label>
+              </div>
+            </div>
+            <div>
+              <label for="mediaAll">掲載媒体(あるだけ全部)</label>
+              <input id="mediaAll" type="text" placeholder="例）自社HP / ぐるなび / Google など" />
+            </div>
+          </div>
+
+          <div>
+            <label for="lineFreq">ライン@の運用頻度</label>
+            <input id="lineFreq" type="text" placeholder="例）毎週1回 / まだ開設して公にしてない など" />
+          </div>
+
+          <div>
+            <label for="memo">補足(クローザーに伝えたいこと)</label>
+            <textarea id="memo" placeholder="例）費用感がネックの可能性あり 等"></textarea>
+          </div>
+
+          <div class="toolbar">
+            <label class="switch"><input id="autosave" type="checkbox" checked> 自動保存（この端末）</label>
+            <span class="spacer"></span>
+            <button type="button" class="warn" onclick="fillSample()">サンプル入力</button>
+            <button type="button" onclick="clearForm()">全クリア</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 右：プレビュー＆コピー -->
+      <section class="card preview" data-tab="preview" id="tabPanelPreview" aria-labelledby="tabPreview">
+        <div class="head">
+          <b>② プレビュー（この内容をコピー）</b>
+          <span class="spacer"></span>
+          <button class="ok desktop-only" onclick="copyToClipboard()">コピーする</button>
+        </div>
+        <pre id="out" aria-live="polite"></pre>
+        <div class="foot">
+          <button class="ok mobile-only" onclick="copyToClipboard()">この内容をコピー</button>
+          <span class="note">ご指定フォーマットに完全一致で出力します（ASCIIコロン/全角コロン/スペースまで再現）。</span>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">コピーしました！</div>
+
+  <script>
+    // ===== Utilities =====
+    const FW_COLON = '：';
+    const FW_SPACE = '　';
+    const el = (id)=>document.getElementById(id);
+
+    function getChoice(name){ const grp=document.querySelectorAll(`input[name="${name}"]`); for(const r of grp) if(r.checked) return r.value; return ''; }
+
+    function fwTime(t){ if(!t) return ''; const [hh,mm]=t.split(':'); return `${hh}${FW_COLON}${mm}`; }
+    function md(dateId){ const v=el(dateId).value; if(!v) return ''; const d=new Date(v+'T00:00:00'); return `${d.getMonth()+1}/${d.getDate()}`; }
+    function dt(dateId,timeId){ const d=md(dateId); const t=fwTime(el(timeId).value); if(d&&t) return `${d}${FW_SPACE}${t}`; return d||t; }
+
+    function buildOutput(){
+      const lines=[];
+      lines.push('【ダービー部隊】');
+      lines.push('〈記入してください〉');
+      lines.push(`■アポインター名${FW_COLON}${el('apointer').value}`);
+      lines.push(`■LINEorMEO: ${el('lineOrMeoText').value}`);
+      lines.push(`■わくわくorダービー${FW_COLON}${el('wakuOrDerbyText').value}`);
+      lines.push(`■電話番号${FW_COLON}${el('tel').value}`);
+      lines.push(`■店舗名${FW_COLON}${el('shop').value}`);
+      lines.push(`■店舗住所${FW_COLON} ${el('addr').value}`);
+      lines.push(`■業種${FW_COLON}${el('industry').value}`);
+      lines.push(`■媒体URL${FW_COLON}${el('url').value}`);
+      lines.push(`■訪問orZOOM${FW_COLON}${el('visitOrZoomText').value}`);
+      lines.push(`■担当者様${FW_COLON}${el('pic').value}`);
+      lines.push(`■担当者の人柄${FW_COLON}${el('personality').value}`);
+      lines.push(`■性別${FW_COLON}${getChoice('sex')}`);
+      lines.push(`■決済者の有無${FW_COLON}${getChoice('hasDecision')}`);
+      lines.push(`■LINE@の有無${FW_COLON}${getChoice('hasLine')}`);
+      lines.push(`■MEO対策の有無${FW_COLON}${getChoice('hasMeo')}`);
+      lines.push(`■商談日${FW_COLON}${md('meetingDate')}`);
+      lines.push(`■商談時間${FW_COLON}${fwTime(el('meetingTime').value)}`);
+      lines.push(`■詰め直し日時${FW_COLON}${dt('followDate','followTime')}`);
+      lines.push(`■アポをくれた理由${FW_COLON}${el('reason').value}`);
+      lines.push(`■すんなりアポor粘りアポ${FW_COLON}${getChoice('easyOrHard')}`);
+      lines.push(`■掲載媒体(あるだけ全部)${FW_COLON}${el('mediaAll').value}`);
+      lines.push(`■ライン@の運用頻度${FW_COLON}${el('lineFreq').value}`);
+      lines.push(`■補足(クローザーに伝えたいこと)${FW_COLON}${el('memo').value}`);
+      return lines.join('\n');
+    }
+
+    function render(){ el('out').textContent=buildOutput(); saveLocal(); }
+
+    function copyToClipboard(){
+      const text=buildOutput();
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(showToast,()=>fallbackCopy(text)); }
+      else { fallbackCopy(text); }
+    }
+    function fallbackCopy(text){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); showToast(); }catch(e){ alert('コピーに失敗しました'); } finally{ document.body.removeChild(ta); } }
+    function showToast(){ const t=el('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
+
+    function clearForm(){ document.getElementById('form').reset(); for(const c of document.querySelectorAll('.chip')) c.classList.remove('active'); render(); }
+
+    function selectChip(groupName,value){ const group=document.querySelectorAll(`input[name="${groupName}"]`); for(const r of group){ const chip=r.closest('.chip'); if(r.value===value){ r.checked=true; chip.classList.add('active'); } else { chip.classList.remove('active'); } } }
+
+    function formatISODate(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+
+    function fillSample(){
+      const now=new Date();
+      el('apointer').value='木下';
+      el('lineOrMeoText').value='LINE';
+      el('wakuOrDerbyText').value='わくわく';
+      el('tel').value='08011744562';
+      el('shop').value='みなみのき助産院（出張）';
+      el('addr').value='栃木県';
+      el('industry').value='助産院';
+      el('url').value='https://minaminoki.com/';
+      el('visitOrZoomText').value='ZOOM';
+      el('pic').value='ナンモク様';
+      el('personality').value='30-40代女性。テンションはかなり低めですが冷静に話聞いてくれる';
+      selectChip('sex','女性');
+      selectChip('hasDecision','あり');
+      selectChip('hasLine','あり');
+      selectChip('hasMeo','あり');
+      el('meetingDate').value = formatISODate(new Date(now.getFullYear(),9,20)); // 10/20
+      el('meetingTime').value = '19:00';
+      el('followDate').value = formatISODate(new Date(now.getFullYear(),9,16)); // 10/16
+      el('followTime').value = '12:10';
+      el('reason').value='運用方法';
+      selectChip('easyOrHard','すんなり');
+      el('mediaAll').value='自社HP';
+      el('lineFreq').value='まだ開設して公にしてない';
+      el('memo').value='公式LINE作ったがまだ使用しておらず最近作ったばかり。今は出張専門で、今後新店舗予定で事業拡大予定。\nかなり費用に関して聞いてきたので費用ネックはきそう。';
+      render();
+    }
+
+    // chip UI active管理 & 入力変化で反映
+    document.addEventListener('change', (e)=>{
+      if(e.target && e.target.matches('.choices input[type="radio"]')){
+        const name=e.target.name; document.querySelectorAll(`input[name="${name}"]`).forEach(r=>r.closest('.chip').classList.remove('active')); e.target.closest('.chip').classList.add('active'); render();
+      }
+      if(e.target && (e.target.matches('input, textarea'))) render();
+    });
+    document.addEventListener('input',(e)=>{ if(e.target && (e.target.matches('input, textarea'))) render(); });
+
+    // === ローカル保存 ===
+    const LS_KEY='derby_form_v3';
+    function saveLocal(){ if(!el('autosave').checked) return; const data={
+      apointer:el('apointer').value,tel:el('tel').value,
+      lineOrMeoText:el('lineOrMeoText').value, wakuOrDerbyText:el('wakuOrDerbyText').value, visitOrZoomText:el('visitOrZoomText').value,
+      shop:el('shop').value,addr:el('addr').value,industry:el('industry').value,url:el('url').value,
+      pic:el('pic').value,personality:el('personality').value,
+      sex:getChoice('sex'),hasDecision:getChoice('hasDecision'),hasLine:getChoice('hasLine'),hasMeo:getChoice('hasMeo'),
+      meetingDate:el('meetingDate').value,meetingTime:el('meetingTime').value,followDate:el('followDate').value,followTime:el('followTime').value,
+      reason:el('reason').value,easyOrHard:getChoice('easyOrHard'),mediaAll:el('mediaAll').value,lineFreq:el('lineFreq').value,memo:el('memo').value,
+      autosave:el('autosave').checked };
+      localStorage.setItem(LS_KEY, JSON.stringify(data)); }
+
+    function loadLocal(){ try{ const raw=localStorage.getItem(LS_KEY); if(!raw){ return; }
+        const d=JSON.parse(raw);
+        el('apointer').value=d.apointer||''; el('tel').value=d.tel||'';
+        el('lineOrMeoText').value=d.lineOrMeoText||''; el('wakuOrDerbyText').value=d.wakuOrDerbyText||''; el('visitOrZoomText').value=d.visitOrZoomText||'';
+        el('shop').value=d.shop||''; el('addr').value=d.addr||''; el('industry').value=d.industry||''; el('url').value=d.url||'';
+        el('pic').value=d.pic||''; el('personality').value=d.personality||'';
+        if(d.sex) selectChip('sex',d.sex);
+        if(d.hasDecision) selectChip('hasDecision',d.hasDecision);
+        if(d.hasLine) selectChip('hasLine',d.hasLine);
+        if(d.hasMeo) selectChip('hasMeo',d.hasMeo);
+        el('meetingDate').value=d.meetingDate||''; el('meetingTime').value=d.meetingTime||'';
+        el('followDate').value=d.followDate||''; el('followTime').value=d.followTime||'';
+        el('reason').value=d.reason||''; if(d.easyOrHard) selectChip('easyOrHard',d.easyOrHard);
+        el('mediaAll').value=d.mediaAll||''; el('lineFreq').value=d.lineFreq||''; el('memo').value=d.memo||'';
+        el('autosave').checked=d.autosave ?? true;
+      }catch{}
+    }
+
+    // ===== Tabs (mobile only) =====
+    let currentTab='input';
+    function setTab(tab){
+      currentTab = tab;
+      const inputCard = document.querySelector('[data-tab="input"]');
+      const previewCard = document.querySelector('[data-tab="preview"]');
+      const inputBtn = document.getElementById('tabInput');
+      const previewBtn = document.getElementById('tabPreview');
+      const isMobile = window.matchMedia('(max-width:1023px)').matches;
+      if(isMobile){
+        inputCard.classList.toggle('show', tab==='input');
+        previewCard.classList.toggle('show', tab==='preview');
+        inputBtn.classList.toggle('active', tab==='input');
+        previewBtn.classList.toggle('active', tab==='preview');
+      }else{
+        // desktop: both visible, highlight preview tab visually but not required
+        inputCard.classList.add('show');
+        previewCard.classList.add('show');
+        inputBtn.classList.remove('active');
+        previewBtn.classList.remove('active');
+      }
+    }
+    window.addEventListener('resize', ()=>setTab(currentTab));
+
+    window.addEventListener('DOMContentLoaded',()=>{
+      loadLocal(); render(); setTab('input');
+    });
+  </script>
+</body>
+</html>
