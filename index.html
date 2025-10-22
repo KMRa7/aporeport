@@ -208,15 +208,15 @@
             <div>
               <label>決済者の有無</label>
               <div class="choices" data-name="hasDecision">
-                <label class="chip"><input type="radio" name="hasDecision" value="あり" />あり</label>
-                <label class="chip"><input type="radio" name="hasDecision" value="なし" />なし</label>
+                <label class="chip"><input type="radio" name="hasDecision" value="有" />有</label>
+                <label class="chip"><input type="radio" name="hasDecision" value="無" />無</label>
               </div>
             </div>
             <div>
               <label>LINE@の有無</label>
               <div class="choices" data-name="hasLine">
-                <label class="chip"><input type="radio" name="hasLine" value="あり" />あり</label>
-                <label class="chip"><input type="radio" name="hasLine" value="なし" />なし</label>
+                <label class="chip"><input type="radio" name="hasLine" value="有" />有</label>
+                <label class="chip"><input type="radio" name="hasLine" value="無" />無</label>
                 <label class="chip"><input type="radio" name="hasLine" value="不明" />不明</label>
               </div>
             </div>
@@ -226,8 +226,8 @@
             <div>
               <label>MEO対策の有無</label>
               <div class="choices" data-name="hasMeo">
-                <label class="chip"><input type="radio" name="hasMeo" value="あり" />あり</label>
-                <label class="chip"><input type="radio" name="hasMeo" value="なし" />なし</label>
+                <label class="chip"><input type="radio" name="hasMeo" value="有" />有</label>
+                <label class="chip"><input type="radio" name="hasMeo" value="無" />無</label>
                 <label class="chip"><input type="radio" name="hasMeo" value="不明" />不明</label>
               </div>
             </div>
@@ -380,9 +380,9 @@
       el('pic').value='ナンモク様';
       el('personality').value='30-40代女性。テンションはかなり低めですが冷静に話聞いてくれる';
       selectChip('sex','女性');
-      selectChip('hasDecision','あり');
-      selectChip('hasLine','あり');
-      selectChip('hasMeo','あり');
+      selectChip('hasDecision','有');
+      selectChip('hasLine','有');
+      selectChip('hasMeo','有');
       el('meetingDate').value = formatISODate(new Date(now.getFullYear(),9,20)); // 10/20
       el('meetingTime').value = '19:00';
       el('followDate').value = formatISODate(new Date(now.getFullYear(),9,16)); // 10/16
