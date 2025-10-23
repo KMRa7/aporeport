@@ -23,7 +23,7 @@
     /* ===== Header ===== */
     header{
       position:sticky; top:0; z-index:20; backdrop-filter: blur(6px);
-      background:color-mix(in lab,var(--bg) 82%,#000 18% / 65%);
+      background:rgba(0,0,0,.4);
       border-bottom:1px solid var(--border); padding:12px 14px env(safe-area-inset-right) 12px;
       display:flex; align-items:center; gap:10px; min-height:var(--header-h);
       padding-left: calc(14px + env(safe-area-inset-left));
@@ -40,23 +40,21 @@
     .mobile-tabs{display:none}
     @media (max-width:1023px){
       .mobile-tabs{ position:sticky; top:var(--header-h); z-index:19; display:flex; gap:0; border-bottom:1px solid var(--border);
-        background:color-mix(in lab,var(--bg) 88%, #000 12% / 85%); backdrop-filter: blur(6px);
+        background:rgba(0,0,0,.5); backdrop-filter: blur(6px);
       }
       .tab-btn{flex:1; appearance:none; border:0; background:transparent; color:var(--muted); font-weight:700; letter-spacing:.02em; padding:12px 8px}
       .tab-btn.active{ color:#e2e8f0; border-bottom:2px solid var(--brand); }
     }
 
     /* Tab-controlled visibility on mobile */
-    [data-tab]{
-      /* desktop default: always visible */
-    }
+    [data-tab]{}
     @media (max-width:1023px){
       [data-tab]{ display:none; }
       [data-tab].show{ display:block; }
     }
 
     /* ===== Cards ===== */
-    .card{ background:color-mix(in srgb,var(--panel) 86%,#0a0f23 14%); border:1px solid var(--border); border-radius:var(--radius); overflow:clip }
+    .card{ background:rgba(10,15,35,.86); border:1px solid var(--border); border-radius:var(--radius); overflow:clip }
     .card h2{ font-size:15px; margin:0; padding:14px 16px; border-bottom:1px solid var(--border); color:#dbeafe; background:linear-gradient(180deg,rgba(39,39,42,.3),rgba(17,24,39,.8)) }
 
     /* ===== Form ===== */
@@ -69,24 +67,24 @@
     label{ font-size:12px; color:var(--muted); letter-spacing:.03em; display:block }
     input[type=text],input[type=url],input[type=tel],input[type=date],input[type=time],textarea{
       width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background:#0b1228; color:var(--ink);
-      outline:none; transition:border-color .2s, box-shadow .2s; font-size:16px; /* prevent iOS zoom */ min-height:44px
+      outline:none; transition:border-color .2s, box-shadow .2s; font-size:16px; min-height:44px
     }
     textarea{ min-height:92px; resize:vertical }
-    input:focus,textarea:focus{ border-color:color-mix(in srgb,var(--brand),white 10%); box-shadow:0 0 0 3px color-mix(in srgb,var(--brand),transparent 82%) }
+    input:focus,textarea:focus{ border-color:rgba(34,211,238,.6); box-shadow:0 0 0 3px rgba(34,211,238,.15) }
 
     /* ===== Choice Chips ===== */
     .choices{ display:flex; flex-wrap:wrap; gap:8px }
     .chip{ border:1px solid var(--border); background:#0a1024; color:var(--ink); padding:10px 14px; border-radius:999px; font-size:14px;
       cursor:pointer; user-select:none; min-height:40px; display:inline-flex; align-items:center; gap:8px; touch-action:manipulation }
     .chip input{ display:none }
-    .chip.active{ border-color:var(--brand); outline:2px solid color-mix(in srgb,var(--brand),transparent 80%); background:color-mix(in srgb,var(--brand),#0a1024 85%) }
+    .chip.active{ border-color:var(--brand); outline:2px solid rgba(34,211,238,.2); background:rgba(34,211,238,.1) }
 
     /* ===== Buttons / Toolbars ===== */
     .toolbar{ display:flex; gap:8px; padding:10px; border-top:1px solid var(--border); background:rgba(0,0,0,.25) }
     button{ --padx:16px; --pady:12px; padding:var(--pady) var(--padx); border-radius:12px; border:1px solid var(--border); background:#10172b; color:var(--ink);
       cursor:pointer; font-weight:700; letter-spacing:.02em; min-height:44px; touch-action: manipulation }
-    button.ok{ border-color:color-mix(in srgb,var(--ok),#000 40%); background:linear-gradient(180deg,color-mix(in srgb,var(--ok),#000 85%),#0c1329) }
-    button.warn{ border-color:color-mix(in srgb,var(--warn),#000 40%); background:linear-gradient(180deg,color-mix(in srgb,var(--warn),#000 85%),#0c1329) }
+    button.ok{ border-color:rgba(52,211,153,.4); background:linear-gradient(180deg,rgba(52,211,153,.15),#0c1329) }
+    button.warn{ border-color:rgba(251,191,36,.4); background:linear-gradient(180deg,rgba(251,191,36,.15),#0c1329) }
 
     .desktop-only{ display:inline-flex }
     .mobile-only{ display:none }
@@ -108,7 +106,7 @@
     .switch{ display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--muted) }
     .switch input{ appearance:none; width:38px; height:22px; background:#0b1228; border:1px solid var(--border); border-radius:999px; position:relative; outline:none; cursor:pointer; transition:.2s }
     .switch input::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; background:#cbd5e1; border-radius:50%; transition:.2s }
-    .switch input:checked{ background:color-mix(in srgb,var(--brand),#0b1228 75%); border-color:color-mix(in srgb,var(--brand),#000 25%) }
+    .switch input:checked{ background:rgba(34,211,238,.25); border-color:rgba(34,211,238,.5) }
     .switch input:checked::after{ left:18px; background:#fff }
 
     /* ===== Toast ===== */
@@ -327,11 +325,11 @@
       lines.push('【ダービー部隊】');
       lines.push('〈記入してください〉');
       lines.push(`■アポインター名${FW_COLON}${el('apointer').value}`);
-      lines.push(`■LINEorMEO: ${el('lineOrMeoText').value}`);
+      lines.push(`■LINEorMEO: ${el('lineOrMeoText').value}`); // 仕様通りASCIIコロン＋スペース
       lines.push(`■わくわくorダービー${FW_COLON}${el('wakuOrDerbyText').value}`);
       lines.push(`■電話番号${FW_COLON}${el('tel').value}`);
       lines.push(`■店舗名${FW_COLON}${el('shop').value}`);
-      lines.push(`■店舗住所${FW_COLON} ${el('addr').value}`);
+      lines.push(`■店舗住所${FW_COLON} ${el('addr').value}`); // 前後スペース再現
       lines.push(`■業種${FW_COLON}${el('industry').value}`);
       lines.push(`■媒体URL${FW_COLON}${el('url').value}`);
       lines.push(`■訪問orZOOM${FW_COLON}${el('visitOrZoomText').value}`);
@@ -361,9 +359,16 @@
     function fallbackCopy(text){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); showToast(); }catch(e){ alert('コピーに失敗しました'); } finally{ document.body.removeChild(ta); } }
     function showToast(){ const t=el('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
 
-    function clearForm(){ document.getElementById('form').reset(); for(const c of document.querySelectorAll('.chip')) c.classList.remove('active'); render(); }
+    function clearForm(){ document.getElementById('form').reset(); for(const c of document.querySelectorAll('.chip')) c.classList.remove('active'); localStorage.removeItem(LS_KEY); render(); }
 
-    function selectChip(groupName,value){ const group=document.querySelectorAll(`input[name="${groupName}"]`); for(const r of group){ const chip=r.closest('.chip'); if(r.value===value){ r.checked=true; chip.classList.add('active'); } else { chip.classList.remove('active'); } } }
+    function selectChip(groupName,value){
+      const group=document.querySelectorAll(`input[name="${groupName}"]`);
+      for(const r of group){
+        const chip=r.closest('.chip');
+        if(r.value===value){ r.checked=true; chip.classList.add('active'); }
+        else { chip.classList.remove('active'); }
+      }
+    }
 
     function formatISODate(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
 
@@ -372,7 +377,7 @@
       el('apointer').value='木下';
       el('lineOrMeoText').value='LINE';
       el('wakuOrDerbyText').value='わくわく';
-      el('tel').value='08011744562';
+      el('tel').value='080-1174-4562';
       el('shop').value='みなみのき助産院（出張）';
       el('addr').value='栃木県';
       el('industry').value='助産院';
@@ -394,6 +399,7 @@
       el('memo').value='公式LINE作ったがまだ使用しておらず最近作ったばかり。今は出張専門で、今後新店舗予定で事業拡大予定。\nかなり費用に関して聞いてきたので費用ネックはきそう。';
       render();
     }
+
     // ===== 電話番号オートハイフン =====
     (function(){
       var telInput = document.getElementById('tel');
@@ -426,7 +432,9 @@
       if(!list) return;
       var arr = [];
       try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) {}
-      list.innerHTML = arr.map(function(x){ return '<option value="' + x.replace(/\"/g,'&quot;') + '\">'; }).join('');
+      list.innerHTML = arr.map(function(x){
+        return `<option value="${String(x).replace(/"/g,'&quot;')}">`;
+      }).join('');
     }
     (function(){
       var ind = document.getElementById('industry');
@@ -436,7 +444,10 @@
     // chip UI active管理 & 入力変化で反映
     document.addEventListener('change', (e)=>{
       if(e.target && e.target.matches('.choices input[type="radio"]')){
-        const name=e.target.name; document.querySelectorAll(`input[name="${name}"]`).forEach(r=>r.closest('.chip').classList.remove('active')); e.target.closest('.chip').classList.add('active'); render();
+        const name=e.target.name;
+        document.querySelectorAll(`input[name="${name}"]`).forEach(r=>r.closest('.chip').classList.remove('active'));
+        e.target.closest('.chip').classList.add('active');
+        render();
       }
       if(e.target && (e.target.matches('input, textarea'))) render();
     });
@@ -444,31 +455,66 @@
 
     // === ローカル保存 ===
     const LS_KEY='derby_form_v3';
-    function saveLocal(){ if(!el('autosave').checked) return; const data={
-      apointer:el('apointer').value,tel:el('tel').value,
-      lineOrMeoText:el('lineOrMeoText').value, wakuOrDerbyText:el('wakuOrDerbyText').value, visitOrZoomText:el('visitOrZoomText').value,
-      shop:el('shop').value,addr:el('addr').value,industry:el('industry').value,url:el('url').value,
-      pic:el('pic').value,personality:el('personality').value,
-      sex:getChoice('sex'),:getChoice(''),hasLine:getChoice('hasLine'),hasMeo:getChoice('hasMeo'),
-      meetingDate:el('meetingDate').value,meetingTime:el('meetingTime').value,followDate:el('followDate').value,followTime:el('followTime').value,
-      reason:el('reason').value,easyOrHard:getChoice('easyOrHard'),lineFreq:el('lineFreq').value,memo:el('memo').value,
-      autosave:el('autosave').checked };
-      localStorage.setItem(LS_KEY, JSON.stringify(data)); }
+    function saveLocal(){
+      if(!el('autosave').checked) return;
+      const data={
+        apointer:el('apointer').value,
+        tel:el('tel').value,
+        lineOrMeoText:el('lineOrMeoText').value,
+        wakuOrDerbyText:el('wakuOrDerbyText').value,
+        visitOrZoomText:el('visitOrZoomText').value,
+        shop:el('shop').value,
+        addr:el('addr').value,
+        industry:el('industry').value,
+        url:el('url').value,
+        pic:el('pic').value,
+        personality:el('personality').value,
+        sex:getChoice('sex'),
+        hasDecision:getChoice('hasDecision'),       /* ★FIX */
+        hasLine:getChoice('hasLine'),
+        hasMeo:getChoice('hasMeo'),
+        meetingDate:el('meetingDate').value,
+        meetingTime:el('meetingTime').value,
+        followDate:el('followDate').value,
+        followTime:el('followTime').value,
+        reason:el('reason').value,
+        easyOrHard:getChoice('easyOrHard'),
+        lineFreq:el('lineFreq').value,
+        memo:el('memo').value,
+        autosave:el('autosave').checked
+      };
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+    }
 
-    function loadLocal(){ try{ const raw=localStorage.getItem(LS_KEY); if(!raw){ return; }
+    function loadLocal(){
+      try{
+        const raw=localStorage.getItem(LS_KEY);
+        if(!raw) return;
         const d=JSON.parse(raw);
-        el('apointer').value=d.apointer||''; el('tel').value=d.tel||'';
-        el('lineOrMeoText').value=d.lineOrMeoText||''; el('wakuOrDerbyText').value=d.wakuOrDerbyText||''; el('visitOrZoomText').value=d.visitOrZoomText||'';
-        el('shop').value=d.shop||''; el('addr').value=d.addr||''; el('industry').value=d.industry||''; el('url').value=d.url||'';
-        el('pic').value=d.pic||''; el('personality').value=d.personality||'';
+        el('apointer').value=d.apointer||'';
+        el('tel').value=d.tel||'';
+        el('lineOrMeoText').value=d.lineOrMeoText||'';
+        el('wakuOrDerbyText').value=d.wakuOrDerbyText||'';
+        el('visitOrZoomText').value=d.visitOrZoomText||'';
+        el('shop').value=d.shop||'';
+        el('addr').value=d.addr||'';
+        el('industry').value=d.industry||'';
+        el('url').value=d.url||'';
+        el('pic').value=d.pic||'';
+        el('personality').value=d.personality||'';
         if(d.sex) selectChip('sex',d.sex);
-        if(d.) selectChip('',d.hasDecision);
+        if(d.hasDecision) selectChip('hasDecision', d.hasDecision); /* ★FIX */
         if(d.hasLine) selectChip('hasLine',d.hasLine);
         if(d.hasMeo) selectChip('hasMeo',d.hasMeo);
-        el('meetingDate').value=d.meetingDate||''; el('meetingTime').value=d.meetingTime||'';
-        el('followDate').value=d.followDate||''; el('followTime').value=d.followTime||'';
-        el('reason').value=d.reason||''; if(d.easyOrHard) selectChip('easyOrHard',d.easyOrHard); el('lineFreq').value=d.lineFreq||''; el('memo').value=d.memo||'';
-        el('autosave').checked=d.autosave ?? true;
+        el('meetingDate').value=d.meetingDate||'';
+        el('meetingTime').value=d.meetingTime||'';
+        el('followDate').value=d.followDate||'';
+        el('followTime').value=d.followTime||'';
+        el('reason').value=d.reason||'';
+        if(d.easyOrHard) selectChip('easyOrHard',d.easyOrHard);
+        el('lineFreq').value=d.lineFreq||'';
+        el('memo').value=d.memo||'';
+        el('autosave').checked = (d.autosave ?? true);
       }catch{}
     }
 
@@ -487,7 +533,6 @@
         inputBtn.classList.toggle('active', tab==='input');
         previewBtn.classList.toggle('active', tab==='preview');
       }else{
-        // desktop: both visible, highlight preview tab visually but not required
         inputCard.classList.add('show');
         previewCard.classList.add('show');
         inputBtn.classList.remove('active');
@@ -496,7 +541,12 @@
     }
     window.addEventListener('resize', ()=>setTab(currentTab));
 
-    window.addEventListener('DOMContentLoaded',()=>{ renderIndustryList(); loadLocal(); render(); setTab('input'); });
+    window.addEventListener('DOMContentLoaded',()=>{
+      renderIndustryList();
+      loadLocal();
+      render();
+      setTab('input');
+    });
   </script>
 </body>
 </html>
