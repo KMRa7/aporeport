@@ -327,7 +327,7 @@
       lines.push(`■アポインター名${FW_COLON}${el('apointer').value}`);
       lines.push(`■LINEorMEO: ${el('lineOrMeoText').value}`); // 仕様通りASCIIコロン＋スペース
       lines.push(`■わくわくorダービー${FW_COLON}${el('wakuOrDerbyText').value}`);
-      lines.push(`■電話番号${FW_COLON}${el('tel').value}`);
+      lines.push(`■電話番号${FW_COLON}${el('tel').value.replace(/\D/g,'')}`);
       lines.push(`■店舗名${FW_COLON}${el('shop').value}`);
       lines.push(`■店舗住所${FW_COLON} ${el('addr').value}`); // 前後スペース再現
       lines.push(`■業種${FW_COLON}${el('industry').value}`);
@@ -377,7 +377,7 @@
       el('apointer').value='木下';
       el('lineOrMeoText').value='LINE';
       el('wakuOrDerbyText').value='わくわく';
-      el('tel').value='080-1174-4562';
+      el('tel').value='08011744562';
       el('shop').value='みなみのき助産院（出張）';
       el('addr').value='栃木県';
       el('industry').value='助産院';
@@ -402,18 +402,18 @@
 
     // ===== 電話番号オートハイフン =====
     (function(){
-      var telInput = document.getElementById('tel');
+      const telInput = document.getElementById('tel');
       if(!telInput) return;
-      telInput.addEventListener('input', function(){
-        var v = telInput.value.replace(/[^0-9]/g,'').slice(0,11);
-        if(v.length >= 11){
-          v = v.replace(/^(\d{3})(\d{4})(\d{4}).*$/, function(_,a,b,c){ return a + '-' + b + '-' + c; });
-        } else if(v.length >= 10){
-          v = v.replace(/^(\d{2,3})(\d{3,4})(\d{4}).*$/, function(_,a,b,c){ return a + '-' + b + '-' + c; });
-        }
+    
+      function sanitize(){
+        // 数字以外を削除して最大11桁まで
+        let v = telInput.value.replace(/\D/g, '').slice(0, 11);
         telInput.value = v;
         render();
-      });
+      }
+    
+      telInput.addEventListener('input', sanitize);
+      telInput.addEventListener('blur', sanitize); // ペースト等の後処理
     })();
 
     // ===== 業種サジェスト（最近入力から） =====
@@ -492,7 +492,7 @@
         if(!raw) return;
         const d=JSON.parse(raw);
         el('apointer').value=d.apointer||'';
-        el('tel').value=d.tel||'';
+        el('tel').value = (d.tel||'').replace(/\D/g,'').slice(0,11);
         el('lineOrMeoText').value=d.lineOrMeoText||'';
         el('wakuOrDerbyText').value=d.wakuOrDerbyText||'';
         el('visitOrZoomText').value=d.visitOrZoomText||'';
