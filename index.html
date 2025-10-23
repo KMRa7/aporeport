@@ -208,8 +208,9 @@
             <div>
               <label>決済者の有無</label>
               <div class="choices" data-name="hasDecision">
-                <label class="chip"><input type="radio" name="hasDecision" value="有" />有</label>
-                <label class="chip"><input type="radio" name="hasDecision" value="無" />無</label>
+                <label class="chip"><input type="radio" name="hasDecision" value="決済者" />決済者</label>
+                <label class="chip"><input type="radio" name="hasDecision" value="非決済者" />非決済者</label>
+                <label class="chip"><input type="radio" name="hasDecision" value="外国人" />外国人</label>
               </div>
             </div>
             <div>
@@ -380,7 +381,7 @@
       el('pic').value='ナンモク様';
       el('personality').value='30-40代女性。テンションはかなり低めですが冷静に話聞いてくれる';
       selectChip('sex','女性');
-      selectChip('hasDecision','有');
+      selectChip('hasDecision','決済者');
       selectChip('hasLine','有');
       selectChip('hasMeo','有');
       el('meetingDate').value = formatISODate(new Date(now.getFullYear(),9,20)); // 10/20
@@ -448,7 +449,7 @@
       lineOrMeoText:el('lineOrMeoText').value, wakuOrDerbyText:el('wakuOrDerbyText').value, visitOrZoomText:el('visitOrZoomText').value,
       shop:el('shop').value,addr:el('addr').value,industry:el('industry').value,url:el('url').value,
       pic:el('pic').value,personality:el('personality').value,
-      sex:getChoice('sex'),hasDecision:getChoice('hasDecision'),hasLine:getChoice('hasLine'),hasMeo:getChoice('hasMeo'),
+      sex:getChoice('sex'),:getChoice(''),hasLine:getChoice('hasLine'),hasMeo:getChoice('hasMeo'),
       meetingDate:el('meetingDate').value,meetingTime:el('meetingTime').value,followDate:el('followDate').value,followTime:el('followTime').value,
       reason:el('reason').value,easyOrHard:getChoice('easyOrHard'),lineFreq:el('lineFreq').value,memo:el('memo').value,
       autosave:el('autosave').checked };
@@ -461,7 +462,7 @@
         el('shop').value=d.shop||''; el('addr').value=d.addr||''; el('industry').value=d.industry||''; el('url').value=d.url||'';
         el('pic').value=d.pic||''; el('personality').value=d.personality||'';
         if(d.sex) selectChip('sex',d.sex);
-        if(d.hasDecision) selectChip('hasDecision',d.hasDecision);
+        if(d.) selectChip('',d.hasDecision);
         if(d.hasLine) selectChip('hasLine',d.hasLine);
         if(d.hasMeo) selectChip('hasMeo',d.hasMeo);
         el('meetingDate').value=d.meetingDate||''; el('meetingTime').value=d.meetingTime||'';
