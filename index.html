@@ -316,7 +316,7 @@
 
     function getChoice(name){ const grp=document.querySelectorAll(`input[name="${name}"]`); for(const r of grp) if(r.checked) return r.value; return ''; }
 
-    function fwTime(t){ if(!t) return ''; const [hh,mm]=t.split(':'); return `${hh}${FW_COLON}${mm}`; }
+    function fwTime(t){ if(!t) return ''; const [hh,mm]=t.split(':'); return `${hh}:${mm}`; }
     function md(dateId){ const v=el(dateId).value; if(!v) return ''; const d=new Date(v+'T00:00:00'); return `${d.getMonth()+1}/${d.getDate()}`; }
     function dt(dateId,timeId){ const d=md(dateId); const t=fwTime(el(timeId).value); if(d&&t) return `${d}${FW_SPACE}${t}`; return d||t; }
 
