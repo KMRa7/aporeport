@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>【ダービー部隊】入力→コピー ツール（v3-mobile）</title>
+  <title>【ダービー部隊】入力→コピー ツール（v3-mobile｜アポ獲得日 追加）</title>
   <style>
     /* ===== Base / Tokens ===== */
     :root{
@@ -142,6 +142,14 @@
             <div>
               <label for="tel">電話番号</label>
               <input id="tel" type="tel" inputmode="tel" placeholder="例）08012345678 / 080-1234-5678" autocomplete="tel" />
+            </div>
+          </div>
+
+          <!-- ★ 追加：アポ獲得日（入力日を自動セット） -->
+          <div class="row">
+            <div>
+              <label for="apoGotDate">アポ獲得日（デフォルト：本日）</label>
+              <input id="apoGotDate" type="date" />
             </div>
           </div>
 
@@ -325,6 +333,8 @@
       lines.push('【ダービー部隊】');
       lines.push('〈記入してください〉');
       lines.push(`■アポインター名${FW_COLON}${el('apointer').value}`);
+      // ★ 追加：アポ獲得日（M/D 表示）
+      lines.push(`■アポ獲得日${FW_COLON}${md('apoGotDate')}`);
       lines.push(`■LINEorMEO: ${el('lineOrMeoText').value}`); // 仕様通りASCIIコロン＋スペース
       lines.push(`■わくわくorダービー${FW_COLON}${el('wakuOrDerbyText').value}`);
       lines.push(`■電話番号${FW_COLON}${el('tel').value.replace(/\D/g,'')}`);
@@ -375,6 +385,8 @@
     function fillSample(){
       const now=new Date();
       el('apointer').value='木下';
+      // サンプルでも「今日」をセット
+      el('apoGotDate').value = formatISODate(now);
       el('lineOrMeoText').value='LINE';
       el('wakuOrDerbyText').value='わくわく';
       el('tel').value='08011744562';
@@ -400,46 +412,20 @@
       render();
     }
 
-    // ===== 電話番号オートハイフン =====
+    // ===== 電話番号オートサニタイズ =====
     (function(){
       const telInput = document.getElementById('tel');
       if(!telInput) return;
-    
-      function sanitize(){
-        // 数字以外を削除して最大11桁まで
-        let v = telInput.value.replace(/\D/g, '').slice(0, 11);
-        telInput.value = v;
-        render();
-      }
-    
+      function sanitize(){ let v = telInput.value.replace(/\D/g, '').slice(0, 11); telInput.value = v; render(); }
       telInput.addEventListener('input', sanitize);
-      telInput.addEventListener('blur', sanitize); // ペースト等の後処理
+      telInput.addEventListener('blur', sanitize);
     })();
 
     // ===== 業種サジェスト（最近入力から） =====
     var RECENT_KEY = 'recent_industry';
-    function pushRecentIndustry(val){
-      var v = (val||'').trim();
-      if(!v) return;
-      var arr = [];
-      try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) {}
-      if(arr.indexOf(v) === -1){ arr.unshift(v); }
-      localStorage.setItem(RECENT_KEY, JSON.stringify(arr.slice(0,10)));
-      renderIndustryList();
-    }
-    function renderIndustryList(){
-      var list = document.getElementById('industryList');
-      if(!list) return;
-      var arr = [];
-      try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) {}
-      list.innerHTML = arr.map(function(x){
-        return `<option value="${String(x).replace(/"/g,'&quot;')}">`;
-      }).join('');
-    }
-    (function(){
-      var ind = document.getElementById('industry');
-      if(ind){ ind.addEventListener('change', function(e){ pushRecentIndustry(e.target.value); }); }
-    })();
+    function pushRecentIndustry(val){ var v = (val||'').trim(); if(!v) return; var arr = []; try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) {} if(arr.indexOf(v) === -1){ arr.unshift(v); } localStorage.setItem(RECENT_KEY, JSON.stringify(arr.slice(0,10))); renderIndustryList(); }
+    function renderIndustryList(){ var list = document.getElementById('industryList'); if(!list) return; var arr = []; try { arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e) {} list.innerHTML = arr.map(function(x){ return `<option value="${String(x).replace(/"/g,'&quot;')}">`; }).join(''); }
+    (function(){ var ind = document.getElementById('industry'); if(ind){ ind.addEventListener('change', function(e){ pushRecentIndustry(e.target.value); }); } })();
 
     // chip UI active管理 & 入力変化で反映
     document.addEventListener('change', (e)=>{
@@ -459,6 +445,7 @@
       if(!el('autosave').checked) return;
       const data={
         apointer:el('apointer').value,
+        apoGotDate:el('apoGotDate').value,            // ★ 追加
         tel:el('tel').value,
         lineOrMeoText:el('lineOrMeoText').value,
         wakuOrDerbyText:el('wakuOrDerbyText').value,
@@ -470,7 +457,7 @@
         pic:el('pic').value,
         personality:el('personality').value,
         sex:getChoice('sex'),
-        hasDecision:getChoice('hasDecision'),       /* ★FIX */
+        hasDecision:getChoice('hasDecision'),
         hasLine:getChoice('hasLine'),
         hasMeo:getChoice('hasMeo'),
         meetingDate:el('meetingDate').value,
@@ -492,6 +479,7 @@
         if(!raw) return;
         const d=JSON.parse(raw);
         el('apointer').value=d.apointer||'';
+        el('apoGotDate').value=d.apoGotDate||'';       // ★ 追加
         el('tel').value = (d.tel||'').replace(/\D/g,'').slice(0,11);
         el('lineOrMeoText').value=d.lineOrMeoText||'';
         el('wakuOrDerbyText').value=d.wakuOrDerbyText||'';
@@ -503,7 +491,7 @@
         el('pic').value=d.pic||'';
         el('personality').value=d.personality||'';
         if(d.sex) selectChip('sex',d.sex);
-        if(d.hasDecision) selectChip('hasDecision', d.hasDecision); /* ★FIX */
+        if(d.hasDecision) selectChip('hasDecision', d.hasDecision);
         if(d.hasLine) selectChip('hasLine',d.hasLine);
         if(d.hasMeo) selectChip('hasMeo',d.hasMeo);
         el('meetingDate').value=d.meetingDate||'';
@@ -542,6 +530,8 @@
     window.addEventListener('resize', ()=>setTab(currentTab));
 
     window.addEventListener('DOMContentLoaded',()=>{
+      // 初期表示で「アポ獲得日」に今日を自動セット（上書きはしない）
+      if(!el('apoGotDate').value){ el('apoGotDate').value = formatISODate(new Date()); }
       renderIndustryList();
       loadLocal();
       render();
