@@ -326,6 +326,7 @@
 
     function fwTime(t){ if(!t) return ''; const [hh,mm]=t.split(':'); return `${hh}:${mm}`; }
     function md(dateId){ const v=el(dateId).value; if(!v) return ''; const d=new Date(v+'T00:00:00'); return `${d.getMonth()+1}/${d.getDate()}`; }
+    function mdToday(){ const d=new Date(); return `${d.getMonth()+1}/${d.getDate()}`; }
     function dt(dateId,timeId){ const d=md(dateId); const t=fwTime(el(timeId).value); if(d&&t) return `${d}${FW_SPACE}${t}`; return d||t; }
 
     function buildOutput(){
@@ -334,7 +335,7 @@
       lines.push('〈記入してください〉');
       lines.push(`■アポインター名${FW_COLON}${el('apointer').value}`);
       // ★ 追加：アポ獲得日（M/D 表示）
-      lines.push(`■アポ獲得日${FW_COLON}${md('apoGotDate')}`);
+      lines.push(`■アポ獲得日${FW_COLON}${md('apoGotDate') || mdToday()}`);
       lines.push(`■LINEorMEO: ${el('lineOrMeoText').value}`); // 仕様通りASCIIコロン＋スペース
       lines.push(`■わくわくorダービー${FW_COLON}${el('wakuOrDerbyText').value}`);
       lines.push(`■電話番号${FW_COLON}${el('tel').value.replace(/\D/g,'')}`);
@@ -369,7 +370,13 @@
     function fallbackCopy(text){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); showToast(); }catch(e){ alert('コピーに失敗しました'); } finally{ document.body.removeChild(ta); } }
     function showToast(){ const t=el('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
 
-    function clearForm(){ document.getElementById('form').reset(); for(const c of document.querySelectorAll('.chip')) c.classList.remove('active'); localStorage.removeItem(LS_KEY); render(); }
+    function clearForm(){
+      document.getElementById('form').reset();
+      for (const c of document.querySelectorAll('.chip')) c.classList.remove('active');
+      localStorage.removeItem(LS_KEY);
+      el('apoGotDate').value = formatISODate(new Date()); // ← 追加
+      render();
+    }
 
     function selectChip(groupName,value){
       const group=document.querySelectorAll(`input[name="${groupName}"]`);
@@ -530,10 +537,10 @@
     window.addEventListener('resize', ()=>setTab(currentTab));
 
     window.addEventListener('DOMContentLoaded',()=>{
-      // 初期表示で「アポ獲得日」に今日を自動セット（上書きはしない）
-      if(!el('apoGotDate').value){ el('apoGotDate').value = formatISODate(new Date()); }
+      // 初期表示：アポ獲得日を本日にセット（ユーザー上書き可）
+      el('apoGotDate').value = formatISODate(new Date());
       renderIndustryList();
-      loadLocal();
+      loadLocal(); // ※apo獲得日はローカル保存からは復元しない
       render();
       setTab('input');
     });
